@@ -64,3 +64,15 @@ def access_required(roles: list):
             raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Access denied: Insufficient role")
         return True
     return validator
+
+def validate_user_exists(token: dict = Depends(validate_token)):
+    user_id = token.get("sub")
+    if not user_id:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="User ID not found in token")
+
+    response = supabase.table("profiles").select("*").eq("user_id", str(user_id)).execute()
+
+    if not response.data:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="User not found or unauthorized to create trips")
+
+    return token

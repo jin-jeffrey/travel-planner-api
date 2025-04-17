@@ -187,7 +187,10 @@ def update_day(trip_id: str, day_id: str, day: DayUpdate, _access=Depends(access
                 supabase.table("activities").update(act.dict(exclude={"id"})).eq("id", act_id).execute()
 
             # Insert new activities
-            new_acts = [a.dict() for a in day.activities if not a.id]
+            new_acts = [
+                {**a.dict(exclude={"id"}), "position": index + 1} 
+                for index, a in enumerate(day.activities) if not a.id
+            ]
             for act in new_acts:
                 act["day_id"] = day_id
             if new_acts:
